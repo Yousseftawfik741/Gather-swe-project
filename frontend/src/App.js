@@ -1,11 +1,17 @@
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import EventCategories from './components/EventCategories';
+import Footer from './components/Footer';
 
 function Home() {
   return (
-    <div>
-      <h1>Welcome to Gather</h1>
-      <p>Your event planning and booking platform.</p>
+    <div className="home-page">
+      <Navbar />
+      <Hero />
+      <EventCategories />
+      <Footer />
     </div>
   );
 }
