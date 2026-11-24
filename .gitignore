@@ -21,3 +21,12 @@ npm-debug.log*
 # Operating system
 .DS_Store
 Thumbs.db
+
+# Local Prisma assistant resources
+backend/.agents/
+backend/.claude/
+backend/.windsurf/
+backend/skills-lock.json
+
+# Generated Prisma Client
+backend/src/generated/
