@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Navbar.css';
 
 function Navbar() {
@@ -21,6 +22,7 @@ function Navbar() {
       </a>
 
       <button
+        type="button"
         className="navbar-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
         aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -46,6 +48,24 @@ function Navbar() {
             {link.label}
           </a>
         ))}
+
+        <div className="navbar-actions">
+          <Link
+            to="/login"
+            className="navbar-login"
+            onClick={() => setMenuOpen(false)}
+          >
+            Log In
+          </Link>
+
+          <Link
+            to="/register"
+            className="navbar-signup"
+            onClick={() => setMenuOpen(false)}
+          >
+            Sign Up
+          </Link>
+        </div>
       </nav>
     </header>
   );
