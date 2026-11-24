@@ -24,8 +24,8 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <a href="#venues" className="hero-primary-button">
-            <span>Explore Venues</span>
+          <a href="#events" className="hero-primary-button">
+            <span>Explore Occasions</span>
             <span>↗</span>
           </a>
 

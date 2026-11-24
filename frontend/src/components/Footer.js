@@ -12,9 +12,8 @@ function Footer() {
 
           <p>
             Every occasion deserves to be unforgettable.
-            Discover beautiful venues, unique experiences
-            and everything you need to celebrate life's
-            special moments.
+            Discover unique experiences and everything you need
+            to celebrate life's special moments.
           </p>
 
           <span className="footer-brand-note">
@@ -25,10 +24,7 @@ function Footer() {
         <div className="footer-column">
           <h3>Explore</h3>
           <a href="#home">Home</a>
-          <a href="#venues">Venues</a>
-          <a href="#services">Services</a>
-          <a href="#packages">Packages</a>
-          <a href="#events">Live Events</a>
+          <a href="#events">Events</a>
         </div>
 
         <div className="footer-column">
@@ -42,11 +38,14 @@ function Footer() {
 
         <div className="footer-contact">
           <span className="footer-eyebrow">LET'S MAKE IT SPECIAL</span>
+
           <h3>Have a moment worth celebrating?</h3>
+
           <p>
             Start exploring and find everything
             you need for your next special occasion.
           </p>
+
           <a href="#events" className="footer-explore-button">
             Explore Gather <span>↗</span>
           </a>

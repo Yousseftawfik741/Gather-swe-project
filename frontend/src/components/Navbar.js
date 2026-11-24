@@ -7,30 +7,36 @@ function Navbar() {
 
   const links = [
     { label: 'Home', href: '#home' },
-    { label: 'Venues', href: '#venues' },
-    { label: 'Services', href: '#services' },
-    { label: 'Packages', href: '#packages' },
-    { label: 'My Events', href: '#events' }
+    { label: 'Events', href: '#events' }
   ];
 
   return (
     <header className="navbar">
-      <a href="#home" className="navbar-logo">
+      <a
+        href="#home"
+        className="navbar-logo"
+        onClick={() => setMenuOpen(false)}
+      >
         Gather<span>.</span>
       </a>
 
       <button
         className="navbar-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
-        aria-label="Toggle navigation"
+        aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
         aria-expanded={menuOpen}
+        aria-controls="main-navigation"
       >
         <span></span>
         <span></span>
         <span></span>
       </button>
 
-      <nav className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
+      <nav
+        id="main-navigation"
+        className={`navbar-menu ${menuOpen ? 'active' : ''}`}
+        aria-label="Main navigation"
+      >
         {links.map((link) => (
           <a
             key={link.label}
@@ -40,11 +46,6 @@ function Navbar() {
             {link.label}
           </a>
         ))}
-
-        <div className="navbar-actions">
-          <a href="#login" className="navbar-login">Log In</a>
-          <a href="#signup" className="navbar-signup">Sign Up</a>
-        </div>
       </nav>
     </header>
   );
