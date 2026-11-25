@@ -3,11 +3,16 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
+beforeEach(() => {
+  window.history.replaceState({}, '', '/');
+});
+
 describe('Gather homepage', () => {
   test('renders the homepage components', () => {
     render(<App />);
 
     expect(screen.getByRole('banner')).toBeInTheDocument();
+
     expect(
       screen.getByRole('navigation', { name: 'Main navigation' })
     ).toBeInTheDocument();
@@ -50,7 +55,15 @@ describe('Gather homepage', () => {
       within(navigation).getByRole('link', { name: 'Events' })
     ).toHaveAttribute('href', '#events');
 
-    ['Venues', 'Services', 'Packages', 'Log In', 'Sign Up'].forEach(
+    expect(
+      within(navigation).getByRole('link', { name: 'Log In' })
+    ).toHaveAttribute('href', '/login');
+
+    expect(
+      within(navigation).getByRole('link', { name: 'Sign Up' })
+    ).toHaveAttribute('href', '/register');
+
+    ['Venues', 'Services', 'Packages', 'My Events'].forEach(
       (label) => {
         expect(
           within(navigation).queryByRole('link', { name: label })
@@ -168,5 +181,121 @@ describe('Mobile navigation menu', () => {
     ).toHaveAttribute('aria-expanded', 'false');
 
     expect(navigation).not.toHaveClass('active');
+  });
+
+  test('contains authentication links when opened', () => {
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('button', { name: 'Open navigation menu' })
+    );
+
+    const navigation = screen.getByRole('navigation', {
+      name: 'Main navigation'
+    });
+
+    expect(navigation).toHaveClass('active');
+
+    expect(
+      within(navigation).getByRole('link', { name: 'Log In' })
+    ).toBeInTheDocument();
+
+    expect(
+      within(navigation).getByRole('link', { name: 'Sign Up' })
+    ).toBeInTheDocument();
+  });
+});
+
+describe('Authentication navigation', () => {
+  test('Log In opens the login page', () => {
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('link', { name: 'Log In' })
+    );
+
+    expect(window.location.pathname).toBe('/login');
+
+    expect(
+      screen.getByRole('heading', { name: 'Welcome back' })
+    ).toBeInTheDocument();
+  });
+
+  test('Sign Up opens the registration page', () => {
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('link', { name: 'Sign Up' })
+    );
+
+    expect(window.location.pathname).toBe('/register');
+
+    expect(
+      screen.getByRole('heading', { name: /create an account/i })
+    ).toBeInTheDocument();
+  });
+
+  test('navigates from login to registration', () => {
+    window.history.replaceState({}, '', '/login');
+
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('link', { name: 'Create an account' })
+    );
+
+    expect(window.location.pathname).toBe('/register');
+
+    expect(
+      screen.getByRole('heading', { name: /create an account/i })
+    ).toBeInTheDocument();
+  });
+
+  test('navigates from registration to login', () => {
+    window.history.replaceState({}, '', '/register');
+
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('link', { name: 'Sign in' })
+    );
+
+    expect(window.location.pathname).toBe('/login');
+
+    expect(
+      screen.getByRole('heading', { name: 'Welcome back' })
+    ).toBeInTheDocument();
+  });
+
+  test('returns from login to the homepage', () => {
+    window.history.replaceState({}, '', '/login');
+
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('link', { name: /back to home/i })
+    );
+
+    expect(window.location.pathname).toBe('/');
+
+    expect(
+      screen.getByRole('banner')
+    ).toBeInTheDocument();
+  });
+
+  test('returns from registration to the homepage', () => {
+    window.history.replaceState({}, '', '/register');
+
+    render(<App />);
+
+    userEvent.click(
+      screen.getByRole('link', { name: /back to home/i })
+    );
+
+    expect(window.location.pathname).toBe('/');
+
+    expect(
+      screen.getByRole('banner')
+    ).toBeInTheDocument();
   });
 });
