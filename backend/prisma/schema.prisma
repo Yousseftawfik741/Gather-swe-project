@@ -1,7 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider     = "prisma-client"
@@ -11,4 +7,362 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum ProviderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum VenueType {
+  HOTEL
+  WEDDING_HALL
+  GARDEN
+  CONFERENCE_HALL
+  RESTAURANT
+  OTHER
+}
+
+enum ServiceCategory {
+  CATERING
+  PHOTOGRAPHY
+  DECORATION
+  ENTERTAINMENT
+  EVENT_PLANNING
+  OTHER
+}
+
+enum EventType {
+  WEDDING
+  BIRTHDAY
+  ENGAGEMENT
+  BUSINESS
+  CONFERENCE
+  GRADUATION
+  OTHER
+}
+
+enum EventStatus {
+  DRAFT
+  PLANNING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  DECLINED
+  EXPIRED
+  REVOKED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  REVOKED
+}
+
+enum ChangeRequestType {
+  EVENT_UPDATE
+  BOOKING_CANCELLATION
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  EXPIRED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLATION_REQUESTED
+  CANCELLED
+  COMPLETED
+}
+
+enum CancellationStatus {
+  REQUESTED
+  PROVIDER_REJECTED
+  COMPLETED
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  provider Provider?
+
+  ownedEvents Event[] @relation("EventOwner")
+
+  memberships     EventMember[] @relation("MemberUser")
+  sentInvitations EventMember[] @relation("MemberInviter")
+
+  invitationHistory EventInvitationHistory[] @relation("InvitationInviter")
+
+  requestedChanges EventChangeRequest[] @relation("ChangeRequester")
+  reviewedChanges  EventChangeRequest[] @relation("ChangeReviewer")
+
+  bookingCancellations BookingCancellation[] @relation("CancellationRequester")
+}
+
+model Provider {
+  id           String         @id @default(uuid()) @db.Uuid
+  userId       String         @unique @db.Uuid
+  businessName String
+  description  String?
+  phone        String?
+  address      String?
+  status       ProviderStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  venues   Venue[]
+  services Service[]
+}
+
+model Venue {
+  id          String    @id @default(uuid()) @db.Uuid
+  providerId  String    @db.Uuid
+  name        String
+  description String
+  type        VenueType
+  address     String
+  city        String
+  capacity    Int
+  price       Decimal   @db.Decimal(12, 2)
+  currency    String    @default("EGP") @db.VarChar(3)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  provider Provider     @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  images   VenueImage[]
+  bookings Booking[]
+
+  @@index([providerId])
+  @@index([city, type])
+}
+
+model VenueImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  venueId   String   @db.Uuid
+  url       String
+  altText   String?
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+}
+
+model Service {
+  id          String          @id @default(uuid()) @db.Uuid
+  providerId  String          @db.Uuid
+  name        String
+  description String
+  category    ServiceCategory
+  price       Decimal         @db.Decimal(12, 2)
+  currency    String          @default("EGP") @db.VarChar(3)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  provider Provider         @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  packages ServicePackage[]
+
+  @@index([providerId])
+  @@index([category])
+}
+
+model ServicePackage {
+  id              String   @id @default(uuid()) @db.Uuid
+  serviceId       String   @db.Uuid
+  name            String
+  description     String?
+  price           Decimal  @db.Decimal(12, 2)
+  currency        String   @default("EGP") @db.VarChar(3)
+  durationMinutes Int?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  service  Service   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  bookings Booking[]
+
+  @@index([serviceId])
+}
+
+model Event {
+  id          String      @id @default(uuid()) @db.Uuid
+  ownerId     String      @db.Uuid
+  title       String
+  description String?
+  type        EventType
+  startDate   DateTime
+  endDate     DateTime?
+  timeZone    String
+  city        String?
+  address     String?
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  owner User @relation("EventOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  members        EventMember[]
+  changeRequests EventChangeRequest[]
+  bookings       Booking[]
+
+  @@index([ownerId])
+  @@index([status, startDate])
+  @@index([city])
+}
+
+model EventMember {
+  id          String       @id @default(uuid()) @db.Uuid
+  eventId     String       @db.Uuid
+  userId      String       @db.Uuid
+  invitedById String       @db.Uuid
+  status      MemberStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  acceptedAt  DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  user User @relation("MemberUser", fields: [userId], references: [id], onDelete: Restrict)
+
+  invitedBy User @relation("MemberInviter", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  invitations EventInvitationHistory[]
+
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+  @@index([userId, status])
+}
+
+model EventInvitationHistory {
+  id            String           @id @default(uuid()) @db.Uuid
+  eventMemberId String           @db.Uuid
+  invitedById   String           @db.Uuid
+  status        InvitationStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  expiresAt     DateTime
+  respondedAt   DateTime?
+
+  eventMember EventMember @relation(fields: [eventMemberId], references: [id], onDelete: Restrict)
+
+  invitedBy User @relation("InvitationInviter", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([eventMemberId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model EventChangeRequest {
+  id           String              @id @default(uuid()) @db.Uuid
+  eventId      String              @db.Uuid
+  bookingId    String?             @db.Uuid
+  requesterId  String              @db.Uuid
+  reviewerId   String?             @db.Uuid
+  requestType  ChangeRequestType
+  beforeData   Json
+  proposedData Json
+  status       ChangeRequestStatus @default(PENDING)
+  createdAt    DateTime            @default(now())
+  reviewedAt   DateTime?
+  decidedAt    DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  requester User @relation("ChangeRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+
+  reviewer User? @relation("ChangeReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  bookingCancellation BookingCancellation?
+
+  @@index([eventId, status])
+  @@index([requesterId, status])
+  @@index([bookingId])
+}
+
+model Booking {
+  id               String        @id @default(uuid()) @db.Uuid
+  eventId          String        @db.Uuid
+  venueId          String?       @db.Uuid
+  servicePackageId String?       @db.Uuid
+  status           BookingStatus @default(PENDING)
+  totalPrice       Decimal       @db.Decimal(12, 2)
+  currency         String        @db.VarChar(3)
+  scheduledAt      DateTime
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  venue Venue? @relation(fields: [venueId], references: [id], onDelete: Restrict)
+
+  servicePackage ServicePackage? @relation(fields: [servicePackageId], references: [id], onDelete: Restrict)
+
+  cancellations  BookingCancellation[]
+  changeRequests EventChangeRequest[]
+
+  @@index([eventId, status])
+  @@index([venueId])
+  @@index([servicePackageId])
+  @@index([status, scheduledAt])
+}
+
+model BookingCancellation {
+  id                         String            @id @default(uuid()) @db.Uuid
+  bookingId                  String            @db.Uuid
+  requestedById              String            @db.Uuid
+  eventChangeRequestId       String?           @unique @db.Uuid
+  previousBookingStatus      BookingStatus
+  status                     CancellationStatus @default(REQUESTED)
+  reason                     String?
+  providerResponse           String?
+  providerRespondedAt        DateTime?
+  estimatedCancellationFee   Decimal?          @db.Decimal(12, 2)
+  finalCancellationFee       Decimal?          @db.Decimal(12, 2)
+  cancellationPolicySnapshot Json?
+  requestedAt                DateTime          @default(now())
+  completedAt                DateTime?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  requestedBy User @relation("CancellationRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+
+  eventChangeRequest EventChangeRequest? @relation(fields: [eventChangeRequestId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId, requestedAt])
+  @@index([requestedById])
+  @@index([status])
 }
