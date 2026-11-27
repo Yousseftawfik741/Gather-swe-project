@@ -1,0 +1,140 @@
+
+.navbar {
+  width: calc(100% - 64px);
+  max-width: 1400px;
+  min-height: 76px;
+  margin: 24px auto;
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffdf9;
+  border: 1px solid #eee4d8;
+  border-radius: 28px;
+  box-shadow: 0 8px 30px rgba(56, 43, 39, 0.06);
+  position: relative;
+  z-index: 10;
+}
+
+.navbar-logo {
+  color: #382b27;
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -1.5px;
+}
+
+.navbar-logo span {
+  color: #c18d82;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 27px;
+}
+
+.navbar-menu > a {
+  color: #65534b;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar-menu > a:hover {
+  color: #b47e73;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-login,
+.navbar-signup {
+  padding: 12px 20px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-login {
+  color: #604b42;
+  border: 1px solid #e4d5c7;
+}
+
+.navbar-signup {
+  color: #fffdf9;
+  background: #795c50;
+}
+
+.navbar-login:hover {
+  background: #f5eee6;
+}
+
+.navbar-signup:hover {
+  background: #60483e;
+}
+
+.navbar-toggle {
+  display: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .navbar {
+    width: calc(100% - 32px);
+    padding: 12px 20px;
+  }
+
+  .navbar-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .navbar-toggle span {
+    width: 23px;
+    height: 2px;
+    background: #382b27;
+    border-radius: 4px;
+  }
+
+  .navbar-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    padding: 24px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    background: #fffdf9;
+    border: 1px solid #eee4d8;
+    border-radius: 24px;
+    box-shadow: 0 12px 30px rgba(56, 43, 39, 0.08);
+  }
+
+  .navbar-menu.active {
+    display: flex;
+  }
+
+  .navbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navbar-login,
+  .navbar-signup {
+    text-align: center;
+  }
+}
