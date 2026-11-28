@@ -2,7 +2,6 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
@@ -149,19 +148,20 @@ model Provider {
 }
 
 model Venue {
-  id          String    @id @default(uuid()) @db.Uuid
-  providerId  String    @db.Uuid
-  name        String
-  description String
-  type        VenueType
-  address     String
-  city        String
-  capacity    Int
-  price       Decimal   @db.Decimal(12, 2)
-  currency    String    @default("EGP") @db.VarChar(3)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                  String      @id @default(uuid()) @db.Uuid
+  providerId          String      @db.Uuid
+  name                String
+  description         String
+  type                VenueType
+  supportedEventTypes EventType[] @default([])
+  address             String
+  city                String
+  capacity            Int
+  price               Decimal     @db.Decimal(12, 2)
+  currency            String      @default("EGP") @db.VarChar(3)
+  isActive            Boolean     @default(true)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
   provider Provider     @relation(fields: [providerId], references: [id], onDelete: Restrict)
   images   VenueImage[]
@@ -304,7 +304,7 @@ model EventChangeRequest {
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
 
-  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  booking Booking? @relation(fields: [bookingId, eventId], references: [id, eventId], onDelete: Restrict)
 
   requester User @relation("ChangeRequester", fields: [requesterId], references: [id], onDelete: Restrict)
 
@@ -312,6 +312,7 @@ model EventChangeRequest {
 
   bookingCancellation BookingCancellation?
 
+  @@unique([id, bookingId])
   @@index([eventId, status])
   @@index([requesterId, status])
   @@index([bookingId])
@@ -338,6 +339,7 @@ model Booking {
   cancellations  BookingCancellation[]
   changeRequests EventChangeRequest[]
 
+  @@unique([id, eventId])
   @@index([eventId, status])
   @@index([venueId])
   @@index([servicePackageId])
@@ -345,27 +347,28 @@ model Booking {
 }
 
 model BookingCancellation {
-  id                         String            @id @default(uuid()) @db.Uuid
-  bookingId                  String            @db.Uuid
-  requestedById              String            @db.Uuid
-  eventChangeRequestId       String?           @unique @db.Uuid
+  id                         String             @id @default(uuid()) @db.Uuid
+  bookingId                  String             @db.Uuid
+  requestedById              String             @db.Uuid
+  eventChangeRequestId       String?            @unique @db.Uuid
   previousBookingStatus      BookingStatus
   status                     CancellationStatus @default(REQUESTED)
   reason                     String?
   providerResponse           String?
   providerRespondedAt        DateTime?
-  estimatedCancellationFee   Decimal?          @db.Decimal(12, 2)
-  finalCancellationFee       Decimal?          @db.Decimal(12, 2)
+  estimatedCancellationFee   Decimal?           @db.Decimal(12, 2)
+  finalCancellationFee       Decimal?           @db.Decimal(12, 2)
   cancellationPolicySnapshot Json?
-  requestedAt                DateTime          @default(now())
+  requestedAt                DateTime           @default(now())
   completedAt                DateTime?
 
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
 
   requestedBy User @relation("CancellationRequester", fields: [requestedById], references: [id], onDelete: Restrict)
 
-  eventChangeRequest EventChangeRequest? @relation(fields: [eventChangeRequestId], references: [id], onDelete: Restrict)
+  eventChangeRequest EventChangeRequest? @relation(fields: [eventChangeRequestId, bookingId], references: [id, bookingId], onDelete: Restrict)
 
+  @@unique([eventChangeRequestId, bookingId])
   @@index([bookingId, requestedAt])
   @@index([requestedById])
   @@index([status])
