@@ -1,3 +1,4 @@
+
 import type { Request, Response, NextFunction } from "express";
 import { Prisma } from "../generated/prisma/client";
 import { prisma } from "../config/database";
@@ -19,12 +20,26 @@ export async function listVenues(
     const search = String(req.query.search || "").trim();
     const city = String(req.query.city || "").trim();
     const type = req.query.type ? String(req.query.type) : undefined;
+    const supportedEventType = req.query.supportedEventType
+      ? String(req.query.supportedEventType)
+      : undefined;
+
     const validTypes = [
       "HOTEL",
       "WEDDING_HALL",
       "GARDEN",
       "CONFERENCE_HALL",
       "RESTAURANT",
+      "OTHER",
+    ];
+
+    const validEventTypes = [
+      "WEDDING",
+      "BIRTHDAY",
+      "ENGAGEMENT",
+      "BUSINESS",
+      "CONFERENCE",
+      "GRADUATION",
       "OTHER",
     ];
 
@@ -35,10 +50,21 @@ export async function listVenues(
       });
       return;
     }
+
+    if (supportedEventType && !validEventTypes.includes(supportedEventType)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid supported event type",
+      });
+      return;
+    }
+
     const minPrice =
       req.query.minPrice === undefined ? undefined : Number(req.query.minPrice);
+
     const maxPrice =
       req.query.maxPrice === undefined ? undefined : Number(req.query.maxPrice);
+
     const minCapacity =
       req.query.minCapacity === undefined
         ? undefined
@@ -91,6 +117,20 @@ export async function listVenues(
               { description: { contains: search, mode: "insensitive" } },
               { city: { contains: search, mode: "insensitive" } },
             ],
+          }
+        : {}),
+      ...(supportedEventType
+        ? {
+            supportedEventTypes: {
+              has: supportedEventType as
+                | "WEDDING"
+                | "BIRTHDAY"
+                | "ENGAGEMENT"
+                | "BUSINESS"
+                | "CONFERENCE"
+                | "GRADUATION"
+                | "OTHER",
+            },
           }
         : {}),
     };

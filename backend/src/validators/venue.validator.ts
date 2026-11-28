@@ -10,10 +10,21 @@ export const venueTypes = [
   "OTHER",
 ] as const;
 
+export const supportedEventTypes = [
+  "WEDDING",
+  "BIRTHDAY",
+  "ENGAGEMENT",
+  "BUSINESS",
+  "CONFERENCE",
+  "GRADUATION",
+  "OTHER",
+] as const;
+
 export const createVenueSchema = z.object({
   name: z.string().trim().min(2).max(150),
   description: z.string().trim().min(1).max(3000),
   type: z.enum(venueTypes),
+  supportedEventTypes: z.array(z.enum(supportedEventTypes)).default([]),
   address: z.string().trim().min(3).max(500),
   city: z.string().trim().min(2).max(100),
   capacity: z.number().int().positive(),
@@ -29,3 +40,6 @@ export const createVenueImageSchema = z.object({
   isPrimary: z.boolean().default(false),
   sortOrder: z.number().int().min(0).default(0),
 });
+
+export type CreateVenueInput = z.infer<typeof createVenueSchema>;
+export type UpdateVenueInput = z.infer<typeof updateVenueSchema>;
