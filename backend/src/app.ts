@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-
+import eventsRouter from "./routes/events";
 const app = express();
 
 // Security middleware
@@ -17,7 +17,8 @@ app.use(
 
 // Parse JSON requests
 app.use(express.json());
-
+// Events API
+app.use("/api/events", eventsRouter);
 // Health check
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
